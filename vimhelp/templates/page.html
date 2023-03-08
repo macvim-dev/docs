@@ -50,7 +50,7 @@ those are the only ones that get rendered dynamically with each request. #}
 {{theme_switcher}}
 </div>
 <p>This is an HTML version of the <a href="{{project.url}}" target="_blank" rel="noopener noreferrer">{{project.name}}</a> help pages{% if version %}, current as of {{project.name}} {{version}}{% endif %}.
-They are kept up-to-date <a href="https://github.com/c4rlo/vimhelp" target="_blank" rel="noopener noreferrer" class="d">automatically</a>
+They are kept up-to-date <a href="https://github.com/macvim-dev/docs" target="_blank" rel="noopener noreferrer" class="d">automatically</a>
 from the <a href="{{project.doc_src_url}}" target="_blank" rel="noopener noreferrer" class="d">{{project.name}} source repository</a>.
 {% if project.name == "Vim" %}
 Also included is the <a href="vim_faq.txt.html">Vim FAQ</a>, kept up to date from its
@@ -65,6 +65,7 @@ are also available.</p>
 {% set sitenavi %}
 Quick links:
 <a href="{{helptxt}}">help overview</a> &middot;
+<a href="gui_mac.txt.html">MacVim reference</a> &middot;
 <a href="quickref.txt.html">quick reference</a> &middot;
 <a href="usr_toc.txt.html">user manual toc</a> &middot;
 <a href="{{helptxt}}#reference_toc">reference manual toc</a>
@@ -110,6 +111,7 @@ Quick links:
 </div>
 </main>
 <p>{{sitenavi}}</p>
-<footer>This site is maintained by Carlo Teubner (<i>(my first name) at cteubner dot net</i>).</footer>
+<footer>Generated at <span style="font-family:monospace;">{{current_time}}</span>{% if commit %} from commit <a href={{project.repo}}commit/{{commit}} style="font-family:monospace;">{{commit[:8]}}</a>{% endif %}. This documentation is maintained by <a href=https://github.com/macvim-dev>macvim-dev</a>.
+The code was modified from <a href=https://github.com/c4rlo/vimhelp>vimhelp</a> (made by Carlo Teubner).</footer>
 </body>
 </html>

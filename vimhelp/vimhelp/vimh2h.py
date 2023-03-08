@@ -1,5 +1,6 @@
 # Translates Vim documentation to HTML
 
+from datetime import datetime
 import flask
 import functools
 import html
@@ -155,10 +156,11 @@ class TabFixer:
 
 
 class VimH2H:
-    def __init__(self, mode="online", project="vim", version=None, tags=None):
+    def __init__(self, mode="online", project="vim", version=None, tags=None, commit=None):
         self._mode = mode
         self._project = PROJECTS[project]
         self._version = version
+        self._commit = commit
         self._urls = {}
         if tags is not None:
             for line in RE_NEWLINE.split(tags):
@@ -339,6 +341,8 @@ class VimH2H:
         static_dir = "/" if self._mode == "online" else ""
         helptxt = "./" if self._mode == "online" else "index.html"
 
+        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
+
         return flask.render_template(
             "page.html",
             mode=self._mode,
@@ -349,6 +353,8 @@ class VimH2H:
             helptxt=helptxt,
             content=flask.Markup("".join(out)),
             sidebar_headings=sidebar_headings,
+            current_time=current_time,
+            commit=self._commit,
         )
 
 

@@ -53,6 +53,14 @@ def main():
         help="Color theme (default: OS-native)",
     )
     parser.add_argument(
+        "--version",
+        help="The version of Vim this document was generated from",
+    )
+    parser.add_argument(
+        "--commit",
+        help="The commit of Vim this document was generated from",
+    )
+    parser.add_argument(
         "--no-tags",
         "-T",
         action="store_true",
@@ -99,14 +107,14 @@ def run(args):
 
     if not args.no_tags and (tags_file := args.in_dir / "tags").is_file():
         print("Processing tags file...")
-        h2h = VimH2H(mode=mode, project=args.project, tags=tags_file.read_text())
+        h2h = VimH2H(mode=mode, project=args.project, version=args.version, commit=args.commit, tags=tags_file.read_text())
         faq = args.in_dir / "vim_faq.txt"
         if faq.is_file():
             print("Processing FAQ tags...")
             h2h.add_tags(faq.name, faq.read_text())
     else:
         print("Initializing tags...")
-        h2h = VimH2H(mode=mode, project=args.project)
+        h2h = VimH2H(mode=mode, project=args.project, version=args.version, commit=args.commit)
         for infile in args.in_dir.iterdir():
             if infile.suffix == ".txt":
                 h2h.add_tags(infile.name, infile.read_text())
