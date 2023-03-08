@@ -1,0 +1,7 @@
+cron:
+- description: fetch and process vim docs
+  url: /enqueue_update?project=vim
+  schedule: every 31 minutes
+- description: fetch and process neovim docs
+  url: /enqueue_update?project=neovim
+  schedule: every 32 minutes
