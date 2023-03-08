@@ -145,8 +145,8 @@ def run(args):
         static_dir_rel = os.path.relpath(root_path / "static", args.out_dir)
         for target in (root_path / "static").iterdir():
             target_name = target.name
-            if target_name == f"favicon-{args.project}.ico":
-                src_name = "favicon.ico"
+            if target_name.startswith(f"favicon-{args.project}"):
+                src_name = target_name.replace(f"favicon-{args.project}", "favicon")
             elif target_name.startswith("favicon-"):
                 continue
             else:

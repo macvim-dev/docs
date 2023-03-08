@@ -4,7 +4,18 @@ those are the only ones that get rendered dynamically with each request. #}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="{{project.name}} help pages, always up-to-date">
 <title>{{project.name}}: {{filename}}</title>
+{% if project.name == 'MacVim' %}
+{# MacVim extension: Support variable size favicon's #}
+<link rel="shortcut icon" href="favicon-16.png">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
+<link rel="icon" type="image/png" sizes="256x256" href="favicon-256.png">
+<link rel="icon" type="image/png" sizes="128x128" href="favicon-128.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+{% else %}
 <link rel="shortcut icon" href="favicon.ico">
+{% endif %}
 <!-- {{project.favicon_notice}} -->
 
 {% if mode != "offline" %}
