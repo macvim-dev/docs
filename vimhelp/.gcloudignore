@@ -1,0 +1,9 @@
+/.git
+/.gitignore
+/.gcloudignore
+/.venv
+/scripts
+/README.md
+/LICENSE
+/tasks.py
+__pycache__/
