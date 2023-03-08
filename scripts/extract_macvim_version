@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+srcdir=$1
+
+macvim_release_number=`grep -A1 CFBundleVersion $srcdir/MacVim/Info.plist|tail -1|sed -E -e 's/^.*<string>([[:digit:]]+).*/\1/'`
+
+echo "$macvim_release_number"

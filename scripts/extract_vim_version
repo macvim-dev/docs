@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+srcdir=$1
+
+# Logic was extracted from MacVim's configure.ac
+vim_major_version_string=`grep -m 1 'define.*VIM_VERSION_MAJOR' $srcdir/version.h|sed -E -e 's/^.*([[:digit:]]+).*/\1/'`
+vim_minor_version_string=`/usr/bin/grep -m 1 'define.*VIM_VERSION_MINOR' $srcdir/version.h|sed -E -e 's/^.*([[:digit:]]+).*/\1/'`
+snapshot=`/usr/bin/grep -C2 "Add new patch number below this line" $srcdir/version.c|tail -1|sed -E -e 's/^ *([[:digit:]]+),.*/\1/'`
+
+vim_short_version_string="$vim_major_version_string.$vim_minor_version_string.$snapshot"
+
+echo "$vim_short_version_string"

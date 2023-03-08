@@ -1,0 +1,85 @@
+name: MacVim Documentation Build
+
+on:
+  push:
+    branches:
+      - 'main'
+  schedule:
+    - cron: "50 3 * * *" # 3:50 am UTC every day. Just a random time intentionally picked to be not during busy hours.
+  workflow_dispatch:
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+env:
+  MACVIM_REPO: 'macvim-dev/macvim'
+  MACVIM_DIR: ${{ format('{0}/macvim', github.workspace) }}
+
+jobs:
+  # Build the page and upload it as an artifact
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout MacVim
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.MACVIM_REPO }}
+          path: 'macvim'
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+          cache-dependency-path: 'vimhelp/requirements.txt'
+
+      - name: Set up vimhelp
+        run: |
+          pip install -r vimhelp/requirements.txt
+
+      - name: Set up commit / version environmental vars
+        run: |
+          cd "$MACVIM_DIR"
+          printf 'MACVIM_COMMIT=%s\n' $(git rev-parse HEAD) >> $GITHUB_ENV
+          printf 'MACVIM_VERSION=%s\n' $(${GITHUB_WORKSPACE}/scripts/extract_macvim_version ./src) >> $GITHUB_ENV
+          printf 'VIM_VERSION=%s\n' $(${GITHUB_WORKSPACE}/scripts/extract_vim_version ./src) >> $GITHUB_ENV
+
+      - name: Build the documentation
+        run: |
+          echo "MacVim commit: ${MACVIM_COMMIT}"
+          echo "MacVim release: ${MACVIM_VERSION}"
+          echo "Vim version: ${VIM_VERSION}"
+
+          version_string="r${MACVIM_VERSION} (Vim ${VIM_VERSION})"
+          echo "Version string: $version_string"
+
+          cd vimhelp
+          python3 scripts/h2h.py -i "$MACVIM_DIR/runtime/doc" -o ../build --project macvim --web-version --version "$version_string" --commit "$MACVIM_COMMIT"
+
+      - name: Upload page artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: build
+
+  # Deploy the artifact to the page
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
