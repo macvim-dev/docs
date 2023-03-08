@@ -1,3 +1,9 @@
+# MacVim modifications
+
+This is a modified version of [vimhelp](https://github.com/c4rlo/vimhelp) for MacVim documentation generation. See below for the original README.
+
+---
+
 # vimhelp.org
 
 This is the code behind the https://vimhelp.org website. It runs on
