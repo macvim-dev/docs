@@ -4,6 +4,7 @@ from datetime import datetime
 import flask
 import functools
 import html
+import json
 import re
 import urllib.parse
 
@@ -233,6 +234,11 @@ class VimH2H:
     @staticmethod
     def prelude(theme):
         return flask.render_template("prelude.html", theme=theme)
+
+    def gen_tags_json(self):
+        obj = {tag: links.href(False) for (tag, links) in self._urls.items()}
+        return json.dumps(obj, sort_keys=True)
+        return out
 
     def to_html(self, filename, contents):
         is_help_txt = filename == "help.txt"

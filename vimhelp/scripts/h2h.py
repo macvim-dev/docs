@@ -67,6 +67,12 @@ def main():
         help="Ignore any tags file, always recreate tags from scratch",
     )
     parser.add_argument(
+        "--output-tags-json",
+        "-J",
+        action="store_true",
+        help="Output a tags.json file, used for client-side search (when not using online version)",
+    )
+    parser.add_argument(
         "--profile", "-P", action="store_true", help="Profile performance"
     )
     parser.add_argument(
@@ -139,6 +145,14 @@ def run(args):
             with (args.out_dir / out_filename).open("w") as f:
                 f.write(prelude)
                 f.write(html)
+
+    if args.output_tags_json:
+        print("Processing tags.json...")
+        json = h2h.gen_tags_json()
+        out_filename = "tags.json"
+        if args.out_dir is not None:
+            with (args.out_dir / out_filename).open("w") as f:
+                f.write(json)
 
     if args.out_dir is not None:
         print("Symlinking static files...")
