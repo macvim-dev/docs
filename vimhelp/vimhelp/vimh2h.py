@@ -182,8 +182,11 @@ class VimH2H:
                 in_example = True
 
     def do_add_tag(self, filename, tag):
-        if self._mode == "online" and filename == "help.txt":
-            htmlfilename = "/"
+        if filename == "help.txt":
+            if self._mode == "online":
+                htmlfilename = "/"
+            else:
+                htmlfilename = "index.html"
         else:
             htmlfilename = filename + ".html"
         self._urls[tag] = Link(filename, htmlfilename, tag)
@@ -334,7 +337,7 @@ class VimH2H:
                 out.append(FAQ_LINE)
 
         static_dir = "/" if self._mode == "online" else ""
-        helptxt = "./" if self._mode == "online" else "help.txt.html"
+        helptxt = "./" if self._mode == "online" else "index.html"
 
         return flask.render_template(
             "page.html",

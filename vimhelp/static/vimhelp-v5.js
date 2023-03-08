@@ -2,6 +2,7 @@
 
 // "Go to keyword" entry
 
+/*
 new TomSelect("#vh-select-tag", {
     maxItems: 1,
     loadThrottle: 250,
@@ -24,6 +25,7 @@ new TomSelect("#vh-select-tag", {
         }
     }
 });
+*/
 
 // Theme switcher
 

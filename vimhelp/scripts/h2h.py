@@ -123,8 +123,12 @@ def run(args):
         content = infile.read_text()
         print(f"Processing {infile}...")
         html = h2h.to_html(infile.name, content)
+        if infile.name != "help.txt":
+            out_filename = f"{infile.name}.html"
+        else:
+            out_filename = "index.html"
         if args.out_dir is not None:
-            with (args.out_dir / f"{infile.name}.html").open("w") as f:
+            with (args.out_dir / out_filename).open("w") as f:
                 f.write(prelude)
                 f.write(html)
 
