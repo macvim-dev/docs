@@ -280,6 +280,12 @@ class VimH2H:
             )
             lastpos = 0
 
+            # Custom MacVim filters
+            if filename == "gui_mac.txt":
+                if re.fullmatch("\s*MACVIM REFERENCE MANUAL\s*", line) != None:
+                    out.append("<h1><img src=MacVim.png width=64px>\nMacVim Reference Manual</h1>")
+                    line = ""
+
             tab_fixer = TabFixer()
 
             for match in RE_TAGWORD.finditer(line):
