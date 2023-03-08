@@ -28,6 +28,10 @@ those are the only ones that get rendered dynamically with each request. #}
 
 <link rel="stylesheet" href="{{static_dir}}vimhelp-v5.css" type="text/css">
 <noscript><link rel="stylesheet" href="{{static_dir}}noscript.css" type="text/css"></noscript>
+{% if redirect %}
+<script>window.vimtags = {{tags_json|safe}}</script>
+<script src="{{static_dir}}vimhelp-redirect.js"></script>
+{% endif %}
 <script defer src="{{static_dir}}vimhelp-v5.js"></script>
 {# MacVim extension: Offline light/dark mode selection using JavaScript #}
 {% if project.name == 'MacVim' %}
@@ -119,6 +123,10 @@ Quick links:
 <pre>
 {{content}}
 </pre>
+{% if redirect %}
+<noscript>Redirect requires JavaScript to work.</noscript>
+Could not find tag.
+{% endif %}
 </div>
 </main>
 <p>{{sitenavi}}</p>

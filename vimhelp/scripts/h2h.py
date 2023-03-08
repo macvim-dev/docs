@@ -70,7 +70,7 @@ def main():
         "--output-tags-json",
         "-J",
         action="store_true",
-        help="Output a tags.json file, used for client-side search (when not using online version)",
+        help="Output tags.json file and client-side tags redirect/search, useful for static page",
     )
     parser.add_argument(
         "--profile", "-P", action="store_true", help="Profile performance"
@@ -153,6 +153,13 @@ def run(args):
         if args.out_dir is not None:
             with (args.out_dir / out_filename).open("w") as f:
                 f.write(json)
+        print("Generating redirect.html...")
+        redirect_html = h2h.to_redirect_html()
+        out_filename = "redirect.html"
+        if args.out_dir is not None:
+            with (args.out_dir / out_filename).open("w") as f:
+                f.write(prelude)
+                f.write(redirect_html)
 
     if args.out_dir is not None:
         print("Symlinking static files...")

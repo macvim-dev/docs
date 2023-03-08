@@ -240,6 +240,34 @@ class VimH2H:
         return json.dumps(obj, sort_keys=True)
         return out
 
+    def to_redirect_html(self):
+        tags_json = self.gen_tags_json()
+
+        content = ""
+
+        filename = "redirect"
+        static_dir = "/" if self._mode == "online" else ""
+        helptxt = "./" if self._mode == "online" else "index.html"
+        sidebar_headings = None
+
+        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
+
+        return flask.render_template(
+            "page.html",
+            redirect=True,
+            tags_json=tags_json,
+            mode=self._mode,
+            project=self._project,
+            version=self._version,
+            filename=filename,
+            static_dir=static_dir,
+            helptxt=helptxt,
+            content=content,
+            sidebar_headings=sidebar_headings,
+            current_time=current_time,
+            commit=self._commit,
+        )
+
     def to_html(self, filename, contents):
         is_help_txt = filename == "help.txt"
         lines = [line.rstrip("\r\n") for line in RE_NEWLINE.split(contents)]
