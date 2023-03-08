@@ -7,6 +7,14 @@ import re
 import urllib.parse
 
 
+class MacVimProject:
+    name = "MacVim"
+    contrasted_name = "MacVim"
+    url = "https://macvim.org/"
+    repo = "https://github.com/macvim-dev/macvim/"
+    doc_src_url = "https://github.com/macvim-dev/macvim/tree/master/runtime/doc"
+
+
 class VimProject:
     name = "Vim"
     contrasted_name = "the original Vim"
@@ -27,9 +35,10 @@ class NeovimProject:
 
 VimProject.other = NeovimProject
 NeovimProject.other = VimProject
+MacVimProject.other = VimProject
 
 
-PROJECTS = {"vim": VimProject, "neovim": NeovimProject}
+PROJECTS = {"vim": VimProject, "neovim": NeovimProject, "macvim": MacVimProject}
 
 FAQ_LINE = '<a href="vim_faq.txt.html#vim_faq.txt" class="l">vim_faq.txt</a>\tFrequently Asked Questions\n'
 

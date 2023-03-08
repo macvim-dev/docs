@@ -36,7 +36,7 @@ def main():
     parser.add_argument(
         "--project",
         "-p",
-        choices=("vim", "neovim"),
+        choices=("vim", "neovim", "macvim"),
         default="vim",
         help="Vim flavour (default: vim)",
     )
