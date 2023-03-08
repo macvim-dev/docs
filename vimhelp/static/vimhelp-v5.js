@@ -40,12 +40,11 @@ for (let theme of ["theme-native", "theme-light", "theme-dark"]) {
         document.getElementsByTagName("html")[0].className = className;
         document.querySelector('meta[name="color-scheme"]').content = meta;
 
-        const cookieDomain = location.hostname.replace(/^neo\./, "");
         const cookieExpiry = theme === "theme-native"
             ? "Tue, 01 Jan 1970 00:00:00 GMT"   // delete cookie
-            : "Tue, 19 Jan 2038 04:14:07 GMT";  // set "permanent" cookie
+            : "Tue, 19 Jan 2050 04:14:07 GMT";  // set "permanent" cookie
         document.cookie =
-            `theme=${className}; Secure; Domain=${cookieDomain}; SameSite=Lax; Path=/; Expires=${cookieExpiry}`;
+            `theme=${className}; Secure; SameSite=Strict; Path=/; Expires=${cookieExpiry}`;
     });
 }
 
