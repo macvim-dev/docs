@@ -19,11 +19,9 @@ those are the only ones that get rendered dynamically with each request. #}
 <!-- {{project.favicon_notice}} -->
 
 {% if mode != "offline" %}
-{% if project.name != 'MacVim' %}
 {# MacVim does not host this on a server and cannot do dynamic queries #}
 <link rel="stylesheet" href="{{static_dir}}tom-select-2.2.2.min.css">
 <script defer src="{{static_dir}}tom-select-2.2.2.base.min.js"></script>
-{% endif %}
 {% endif %}
 
 <link rel="stylesheet" href="{{static_dir}}vimhelp-v5.css" type="text/css">
@@ -92,10 +90,10 @@ Quick links:
 {% if mode != "offline" %}
 <div class="bar">
   <div class="ql">{{sitenavi}}</div>
-  {% if project.name != "MacVim" %}
   <div class="srch" id="go-to-tag">
     <select id="vh-select-tag"></select>
   </div>
+  {% if project.name != "MacVim" %}
   <form class="srch" action="https://duckduckgo.com" method="get" target="_blank" rel="noopener noreferrer">
     <input type="hidden" name="sites" value="{{project.vimdoc_site}}">
     <input type="search" name="q" id="vh-srch-input" placeholder="Site search">

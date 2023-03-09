@@ -2,7 +2,6 @@
 
 // "Go to keyword" entry
 
-/*
 new TomSelect("#vh-select-tag", {
     maxItems: 1,
     loadThrottle: 250,
@@ -15,9 +14,90 @@ new TomSelect("#vh-select-tag", {
     },
     shouldLoad: (query) => query.length >= 1,
     load: async (query, callback) => {
+        /*
+         * Online dynamic server route. Not used.
+         *
         const url = "/api/tagsearch?q=" + encodeURIComponent(query);
         const resp = await fetch(url);
         callback((await resp.json()).results);
+        */
+
+        // Offline mode
+        if (!window.vimtags) {
+            // Only download this file on demand as it's not tiny.
+            const tags_url = "tags.json";
+            const tags_resp = await fetch(tags_url);
+            window.vimtags = await tags_resp.json();
+            window.sortedVimtags = Object.keys(window.vimtags).sort();
+        }
+        // Use logic from tagsearch.py
+        const MAX_RESULT = 30;
+
+        let results = [];
+        let results_set = {};
+        function addResult(tag) {
+            if (tag in results_set)
+                return false;
+            const link = window.vimtags[tag];
+            results.push({href: link, id: tag, text: tag});
+            results_set[tag] = null;
+            return results.length >= MAX_RESULT;
+        }
+
+        // Find all tags beginning with query.
+        for (let found = false, i = 0; i < sortedVimtags.length; i++) {
+            let tag = sortedVimtags[i];
+            if (tag.startsWith(query)) {
+                found = true;
+                if (addResult(tag)) {
+                    callback(results);
+                    return;
+                }
+            }
+            else if (found) {
+                break;
+            }
+        }
+        // If we didn't find enough, and the query is all-lowercase, add all
+        // case-insensitive matches.
+        const queryLower = query.toLowerCase();
+        if (queryLower == query) {
+            for (let i = 0; i < sortedVimtags.length; i++) {
+                let tag = sortedVimtags[i];
+                if (tag.toLowerCase().startsWith(queryLower)) {
+                    if (addResult(tag)) {
+                        callback(results);
+                        return;
+                    }
+                }
+            }
+        }
+        // If we still didn't find enough, additionally find all tags that contain query as a
+        // substring.
+        for (let i = 0; i < sortedVimtags.length; i++) {
+            let tag = sortedVimtags[i];
+            if (tag.includes(query)) {
+                if (addResult(tag)) {
+                    callback(results);
+                    return;
+                }
+            }
+        }
+
+        // If we still didn't find enough, and the query is all-lowercase, additionally find
+        // all tags that contain query as a substring case-insensitively.
+        if (queryLower == query) {
+            for (let i = 0; i < sortedVimtags.length; i++) {
+                let tag = sortedVimtags[i];
+                if (tag.toLowerCase().includes(queryLower)) {
+                    if (addResult(tag)) {
+                        callback(results);
+                        return;
+                    }
+                }
+            }
+        }
+        callback(results);
     },
     onChange: (value) => {
         if (value) {
@@ -25,7 +105,6 @@ new TomSelect("#vh-select-tag", {
         }
     }
 });
-*/
 
 // Theme switcher
 
