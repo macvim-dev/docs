@@ -36,7 +36,7 @@ Source the venv:
 Then run the script (make sure to substitute `$macvim_dir` with the directory that you have MacVim cloned to):
 
 ```
-scripts/h2h.py -i $macvim_dir/runtime/doc -o ../build --project macvim --web-version
+scripts/h2h.py -i $macvim_dir/runtime/doc -o ../build --project macvim --web-version --output-tags-json
 ```
 
 You can then run a simple web server in the build folder and browser to it. E.g. Use Python to server a server (it will be available at http://localhost:8000):
