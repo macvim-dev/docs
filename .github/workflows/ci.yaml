@@ -59,7 +59,7 @@ jobs:
           echo "Version string: $version_string"
 
           cd vimhelp
-          python3 scripts/h2h.py -i "$MACVIM_DIR/runtime/doc" -o ../build --project macvim --web-version --version "$version_string" --commit "$MACVIM_COMMIT"
+          python3 scripts/h2h.py -i "$MACVIM_DIR/runtime/doc" -o ../build --project macvim --web-version --output-tags-json --version "$version_string" --commit "$MACVIM_COMMIT"
 
       - name: Upload page artifact
         uses: actions/upload-pages-artifact@v1
