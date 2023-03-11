@@ -19,6 +19,12 @@ jobs:
   # Build the page and upload it as an artifact
   build:
     runs-on: ubuntu-latest
+
+    outputs:
+      docs_commit: ${{ steps.setup-env-vars.outputs.docs_commit }}
+      macvim_commit: ${{ steps.setup-env-vars.outputs.macvim_commit }}
+      macvim_commit_cache_hit: ${{ steps.restore-cache-macvim-commit.outputs.cache-hit }}
+
     permissions:
       contents: read
     steps:
@@ -30,6 +36,32 @@ jobs:
           repository: ${{ env.MACVIM_REPO }}
           path: 'macvim'
 
+      - name: Set up commit / version environmental vars
+        id: setup-env-vars
+        run: |
+          printf 'docs_commit=%s\n' $(git rev-parse HEAD) >> $GITHUB_OUTPUT
+
+          cd "$MACVIM_DIR"
+          printf 'MACVIM_COMMIT=%s\n' $(git rev-parse HEAD) >> $GITHUB_ENV
+          printf 'MACVIM_VERSION=%s\n' $(${GITHUB_WORKSPACE}/scripts/extract_macvim_version ./src) >> $GITHUB_ENV
+          printf 'VIM_VERSION=%s\n' $(${GITHUB_WORKSPACE}/scripts/extract_vim_version ./src) >> $GITHUB_ENV
+
+          printf 'macvim_commit=%s\n' $(git rev-parse HEAD) >> $GITHUB_OUTPUT
+
+      # We cache the last built commit info, so that we could choose not to
+      # deploy if we have already built this version already. This is useful to
+      # prevent the daily workflow stomping previously generated versions.
+      # Useful for preserving browser caching.
+      # We do make an exception for manual dispatch as that usually means we
+      # want to re-built the page.
+      - name: Cache last used MacVim commit
+        id: restore-cache-macvim-commit
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ github.workspace }}/macvim-last-commit.txt
+          key: macvim-built-commit-${{ steps.setup-env-vars.outputs.docs_commit}}-${{ steps.setup-env-vars.outputs.macvim_commit }}
+
       - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
@@ -39,13 +71,6 @@ jobs:
       - name: Set up vimhelp
         run: |
           pip install -r vimhelp/requirements.txt
-
-      - name: Set up commit / version environmental vars
-        run: |
-          cd "$MACVIM_DIR"
-          printf 'MACVIM_COMMIT=%s\n' $(git rev-parse HEAD) >> $GITHUB_ENV
-          printf 'MACVIM_VERSION=%s\n' $(${GITHUB_WORKSPACE}/scripts/extract_macvim_version ./src) >> $GITHUB_ENV
-          printf 'VIM_VERSION=%s\n' $(${GITHUB_WORKSPACE}/scripts/extract_vim_version ./src) >> $GITHUB_ENV
 
       - name: Build the documentation
         run: |
@@ -68,7 +93,10 @@ jobs:
   deploy:
     needs: build
 
-    if: ${{ github.ref == 'refs/heads/main' }}
+    # Only allow deployment if on main branch (environmental protection would
+    # block it otherwise anyway), and if we haven't already built this version
+    # already.
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || needs.build.outputs.macvim_commit_cache_hit != 'true') }}
 
     permissions:
       pages: write      # to deploy to Pages
@@ -83,3 +111,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+
+      # Deployment is good. Finish caching the commit info so we won't run
+      # again until either this repo or MacVim got updated.
+      - name: Check MacVim last built commit
+        id: check-macvim-commit
+        if: ${{ needs.build.outputs.macvim_commit_cache_hit != 'true' && github.event_name != 'workflow_dispatch' }}
+        run: |
+          date > "${GITHUB_WORKSPACE}/macvim-last-commit.txt"
+
+      - name: Cache last used MacVim commit
+        id: save-cache-macvim-commit
+        uses: actions/cache/save@v3
+        if: ${{ needs.build.outputs.macvim_commit_cache_hit != 'true' && github.event_name != 'workflow_dispatch' }}
+        with:
+          path: ${{ github.workspace }}/macvim-last-commit.txt
+          key: macvim-built-commit-${{ needs.build.outputs.docs_commit }}-${{ needs.build.outputs.macvim_commit }}
