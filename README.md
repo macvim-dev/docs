@@ -1,5 +1,7 @@
 # MacVim auto-generated web documentation 
 
+[![MacVim Documentation Build](https://github.com/macvim-dev/docs/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/macvim-dev/docs/actions/workflows/ci.yaml)
+
 This repository contains automation scripts to generate online web version of MacVim documentation. It uses [vimhelp](https://github.com/c4rlo/vimhelp) as a backend to generate HTML versions of MacVim's documentation and publishes them as a GitHub page. The repository is named "docs" so that it would show up as the same URL under the root domain under GitHub Pages.
 
 ## vimhelp
