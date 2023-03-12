@@ -54,12 +54,12 @@ jobs:
       # Useful for preserving browser caching.
       # We do make an exception for manual dispatch as that usually means we
       # want to re-built the page.
-      - name: Cache last used MacVim commit
+      - name: Check cached version info to see if current commit has been built before
         id: restore-cache-macvim-commit
         if: ${{ github.event_name != 'workflow_dispatch' }}
         uses: actions/cache/restore@v3
         with:
-          path: ${{ github.workspace }}/macvim-last-commit.txt
+          path: ${{ github.workspace }}/macvim-built-commit.txt
           key: macvim-built-commit-${{ steps.setup-env-vars.outputs.docs_commit}}-${{ steps.setup-env-vars.outputs.macvim_commit }}
 
       - uses: actions/setup-python@v4
@@ -119,16 +119,16 @@ jobs:
 
       # Deployment is good. Finish caching the commit info so we won't run
       # again until either this repo or MacVim got updated.
-      - name: Check MacVim last built commit
-        id: check-macvim-commit
+      - name: Generate built commit version info marker
         if: ${{ needs.build.outputs.macvim_commit_cache_hit != 'true' && github.event_name != 'workflow_dispatch' }}
         run: |
-          date > "${GITHUB_WORKSPACE}/macvim-last-commit.txt"
+          # This file is just a marker. Save the current date in case we are curious later when the last version was built.
+          date > "${GITHUB_WORKSPACE}/macvim-built-commit.txt"
 
-      - name: Cache last used MacVim commit
+      - name: Update cache with commit version info
         id: save-cache-macvim-commit
         uses: actions/cache/save@v3
         if: ${{ needs.build.outputs.macvim_commit_cache_hit != 'true' && github.event_name != 'workflow_dispatch' }}
         with:
-          path: ${{ github.workspace }}/macvim-last-commit.txt
+          path: ${{ github.workspace }}/macvim-built-commit.txt
           key: macvim-built-commit-${{ needs.build.outputs.docs_commit }}-${{ needs.build.outputs.macvim_commit }}
