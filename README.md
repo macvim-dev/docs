@@ -16,7 +16,8 @@ git subtree add --prefix=vimhelp vimhelp/master --squash
 
 Command used for staying in sync and pulling from upstream:
 ```
-git subtree merge --prefix=vimhelp vimhelp/master --squash
+git fetch vimhelp
+git subtree merge -m "Merge subtree 'vimhelp' from 'vimhelp/master'" --prefix=vimhelp vimhelp/master --squash
 ```
 
 ## Running locally
@@ -41,7 +42,7 @@ Then run the script (make sure to substitute `$macvim_dir` with the directory th
 scripts/h2h.py -i $macvim_dir/runtime/doc -o ../build --project macvim --web-version --output-tags-json
 ```
 
-You can then run a simple web server in the build folder and browser to it. E.g. Use Python to server a server (it will be available at http://localhost:8000):
+You can then run a simple web server in the build folder and browse to it. E.g. Use Python to server a server (it will be available at http://localhost:8000):
 
 ```
 cd build
