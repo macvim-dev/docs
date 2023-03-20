@@ -7,7 +7,7 @@ set -e -o pipefail
 # We also exclude the redirect.html since it's not really useful to crawl.
 echo "https://macvim.org/docs/"
 for f in *.html; do
-    if [[ "$f" != "redirect.html" ]]; then
+    if [[ "$f" != "redirect.html" && "$f" != "index.html" ]]; then
         echo "https://macvim.org/docs/$f"
     fi
 done

@@ -186,8 +186,8 @@ class VimH2H:
 
     def do_add_tag(self, filename, tag):
         if filename == "help.txt":
-            if self._mode == "online":
-                htmlfilename = "/"
+            if self._mode != "offline":
+                htmlfilename = "./"
             else:
                 htmlfilename = "index.html"
         else:
@@ -247,7 +247,7 @@ class VimH2H:
 
         filename = "redirect"
         static_dir = "/" if self._mode == "online" else ""
-        helptxt = "./" if self._mode == "online" else "index.html"
+        helptxt = "./" if self._mode != "offline" else "index.html"
         sidebar_headings = None
 
         current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
@@ -379,7 +379,7 @@ class VimH2H:
                 out.append(FAQ_LINE)
 
         static_dir = "/" if self._mode == "online" else ""
-        helptxt = "./" if self._mode == "online" else "index.html"
+        helptxt = "./" if self._mode != "offline" else "index.html"
 
         current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
 
