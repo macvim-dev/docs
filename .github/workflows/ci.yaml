@@ -115,7 +115,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
 
       # Deployment is good. Finish caching the commit info so we won't run
       # again until either this repo or MacVim got updated.
