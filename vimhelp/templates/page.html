@@ -81,8 +81,8 @@ Quick links:
 <a href="gui_mac.txt.html">MacVim reference</a> &middot;
 <a href="quickref.txt.html">quick reference</a> &middot;
 <a href="index.txt.html">commands index</a> &middot;
-<a href="usr_toc.txt.html">user manual toc</a> &middot;
-<a href="{{helptxt}}#reference_toc">reference manual toc</a>
+<a href="usr_toc.txt.html">user manual</a> &middot;
+<a href="{{helptxt}}#reference_toc">reference manual</a>
 {% if project.name == "Vim" %}
 &middot; <a href="vim_faq.txt.html">faq</a>
 {% endif %}
@@ -94,12 +94,10 @@ Quick links:
   <div class="srch" id="go-to-tag">
     <select id="vh-select-tag"></select>
   </div>
-  {% if project.name != "MacVim" %}
   <form class="srch" action="https://duckduckgo.com" method="get" target="_blank" rel="noopener noreferrer">
     <input type="hidden" name="sites" value="{{project.vimdoc_site}}">
     <input type="search" name="q" id="vh-srch-input" placeholder="Site search">
   </form>
-  {% endif %}
   {% if filename != "help.txt" %}
   {{theme_switcher}}
   {% endif %}

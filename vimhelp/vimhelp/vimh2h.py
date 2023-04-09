@@ -13,6 +13,7 @@ class MacVimProject:
     name = "MacVim"
     contrasted_name = "MacVim"
     url = "https://macvim.org/"
+    vimdoc_site = "macvim.org/docs"
     repo = "https://github.com/macvim-dev/macvim/"
     doc_src_url = "https://github.com/macvim-dev/macvim/tree/master/runtime/doc"
 
