@@ -1,12 +1,14 @@
 # Translates Vim documentation to HTML
 
 from datetime import datetime
-import flask
 import functools
 import html
 import json
 import re
 import urllib.parse
+
+import flask
+import markupsafe
 
 
 class MacVimProject:
@@ -98,7 +100,10 @@ RE_HEADING = re.compile(
 )
 RE_EG_START = re.compile(r"(.* )?>(?:vim|lua)?$")
 RE_EG_END = re.compile(r"[^ \t]")
-RE_SECTION = re.compile(r"(?!NOTE$|CTRL-|\.\.\.$)([A-Z.][-A-Z0-9 .,()_?]*)(?:\s+\*|$)")
+RE_SECTION = re.compile(
+    r"(?!NOTE$|UTF-8.$|VALID.$|OLE.$|CTRL-|\.\.\.$)"
+    r"([A-Z.][-A-Z0-9 .,()_?]*?)\s*(?:\s\*|$)"
+)
 RE_STARTAG = re.compile(r'\*([^ \t"*]+)\*(?:\s|$)')
 RE_LOCAL_ADD = re.compile(r"LOCAL ADDITIONS:\s+\*local-additions\*$")
 
@@ -275,11 +280,13 @@ class VimH2H:
 
         out = []
         sidebar_headings = []
+        sidebar_lvl = 2
         in_example = False
         for idx, line in enumerate(lines):
             prev_line = "" if idx == 0 else lines[idx - 1]
             if prev_line == "" and idx > 1:
                 prev_line = lines[idx - 2]
+
             if in_example:
                 if RE_EG_END.match(line):
                     in_example = False
@@ -288,18 +295,31 @@ class VimH2H:
                 else:
                     out.extend(('<span class="e">', html_escape(line), "</span>\n"))
                     continue
+
             if RE_HRULE.match(line):
                 out.extend(('<span class="h">', html_escape(line), "</span>\n"))
                 continue
+
             if m := RE_EG_START.match(line):
                 in_example = True
                 line = m.group(1) or ""
-            span_opened = False
+
+            heading = None
+            skip_to_col = None
             if m := RE_SECTION.match(line):
-                out.extend(('<span class="c">', m.group(1), "</span>"))
-                line = line[m.end(1) :]
+                heading = m.group(1)
+                heading_lvl = 2
+                out.extend(('<span class="c">', heading, "</span>"))
+                skip_to_col = m.end(1)
             elif RE_HRULE1.match(prev_line) and (m := RE_HEADING.match(line)):
                 heading = m.group(1)
+                heading_lvl = 1
+
+            span_opened = False
+            if heading is not None and sidebar_lvl >= heading_lvl:
+                if sidebar_lvl > heading_lvl:
+                    sidebar_lvl = heading_lvl
+                    sidebar_headings = []
                 if m := RE_STARTAG.search(line):
                     tag = m.group(1)
                 else:
@@ -308,8 +328,14 @@ class VimH2H:
                     span_opened = True
                 tag_escaped = urllib.parse.quote_plus(tag)
                 sidebar_headings.append(
-                    flask.Markup(f'<a href="#{tag_escaped}">{html_escape(heading)}</a>')
+                    markupsafe.Markup(
+                        f'<a href="#{tag_escaped}">{html_escape(heading)}</a>'
+                    )
                 )
+
+            if skip_to_col is not None:
+                line = line[skip_to_col:]
+
             is_faq_line = (
                 self._project is VimProject and is_help_txt and RE_LOCAL_ADD.match(line)
             )
@@ -392,7 +418,7 @@ class VimH2H:
             filename=filename,
             static_dir=static_dir,
             helptxt=helptxt,
-            content=flask.Markup("".join(out)),
+            content=markupsafe.Markup("".join(out)),
             sidebar_headings=sidebar_headings,
             current_time=current_time,
             commit=self._commit,
