@@ -46,6 +46,7 @@ MacVimProject.other = VimProject
 PROJECTS = {"vim": VimProject, "neovim": NeovimProject, "macvim": MacVimProject}
 
 FAQ_LINE = '<a href="vim_faq.txt.html#vim_faq.txt" class="l">vim_faq.txt</a>\tFrequently Asked Questions\n'
+MATCHIT_LINE = '<a href="matchit.txt.html#matchit.txt" class="l">matchit.txt</a>\tExtended "%" matching\n'
 
 RE_TAGLINE = re.compile(r"(\S+)\s+(\S+)")
 
@@ -127,14 +128,14 @@ class Link:
             elif special is not None:
                 self._cssclass = "s"
 
-    @functools.cache
+    @functools.cache  # noqa: B019
     def href(self, is_same_doc):
         if self._tag_quoted is None:
             return self._htmlfilename
         doc = "" if is_same_doc else self._htmlfilename
         return f"{doc}#{self._tag_quoted}"
 
-    @functools.cache
+    @functools.cache  # noqa: B019
     def html(self, is_pipe, is_same_doc):
         cssclass = "l" if is_pipe else self._cssclass
         return (
@@ -175,6 +176,10 @@ class VimH2H:
                     tag, filename = m.group(1, 2)
                     self.do_add_tag(filename, tag)
         self._urls["help-tags"] = Link("tags", "tags.html", "help-tags")
+
+    def __del__(self):
+        Link.href.cache_clear()
+        Link.html.cache_clear()
 
     def add_tags(self, filename, contents):
         in_example = False
@@ -336,9 +341,7 @@ class VimH2H:
             if skip_to_col is not None:
                 line = line[skip_to_col:]
 
-            is_faq_line = (
-                self._project is VimProject and is_help_txt and RE_LOCAL_ADD.match(line)
-            )
+            is_local_additions = is_help_txt and RE_LOCAL_ADD.match(line)
             lastpos = 0
 
             # Custom MacVim filters
@@ -402,7 +405,9 @@ class VimH2H:
             if span_opened:
                 out.append("</span>")
             out.append("\n")
-            if is_faq_line:
+
+            if is_local_additions and self._project is VimProject:
+                out.append(MATCHIT_LINE)
                 out.append(FAQ_LINE)
 
         static_dir = "/" if self._mode == "online" else ""
