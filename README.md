@@ -42,7 +42,7 @@ Then run the script (make sure to substitute `$macvim_dir` with the directory th
 scripts/h2h.py -i $macvim_dir/runtime/doc -o ../build --project macvim --web-version --output-tags-json
 ```
 
-You can then run a simple web server in the build folder and browse to it. E.g. Use Python to server a server (it will be available at http://localhost:8000):
+You can then run a simple web server in the build folder and browse to it. E.g. Use Python as a web server (it will be available at http://localhost:8000):
 
 ```
 cd build
