@@ -57,7 +57,7 @@ jobs:
       - name: Check cached version info to see if current commit has been built before
         id: restore-cache-macvim-commit
         if: ${{ github.event_name != 'workflow_dispatch' }}
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/macvim-built-commit.txt
           key: macvim-built-commit-${{ steps.setup-env-vars.outputs.docs_commit}}-${{ steps.setup-env-vars.outputs.macvim_commit }}
@@ -127,7 +127,7 @@ jobs:
 
       - name: Update cache with commit version info
         id: save-cache-macvim-commit
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: ${{ needs.build.outputs.macvim_commit_cache_hit != 'true' && github.event_name != 'workflow_dispatch' }}
         with:
           path: ${{ github.workspace }}/macvim-built-commit.txt
