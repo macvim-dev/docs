@@ -4,22 +4,22 @@ those are the only ones that get rendered dynamically with each request. #}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="{{project.name}} help pages, always up-to-date">
 <title>{{project.name}}: {{filename}}</title>
-<link rel="shortcut icon" href="favicon.ico">
+<link rel="shortcut icon" href="{{project.favicon|static_path}}">
 <!-- {{project.favicon_notice}} -->
 
 {% if mode != "offline" %}
-<link rel="stylesheet" href="{{static_dir}}tom-select-2.2.2.min.css">
-<script defer src="{{static_dir}}tom-select-2.2.2.base.min.js"></script>
+<link rel="stylesheet" href="{{'tom-select.min.css'|static_path}}">
+<script defer src="{{'tom-select.base.min.js'|static_path}}"></script>
 {% endif %}
 
-<link rel="stylesheet" href="{{static_dir}}vimhelp-v5.css">
-<noscript><link rel="stylesheet" href="{{static_dir}}noscript.css"></noscript>
-<script defer src="{{static_dir}}vimhelp-v5.js"></script>
+<link rel="stylesheet" href="{{'vimhelp.css'|static_path}}">
+<noscript><link rel="stylesheet" href="{{'noscript.css'|static_path}}"></noscript>
+<script defer src="{{'vimhelp.js'|static_path}}"></script>
 </head>
 <body>
 
 {% set theme_switcher %}
-<div id="theme-switcher">
+<div id="theme-switcher" class="need-js">
   <button id="theme-current" title="Switch theme">Theme</button>
   <div id="theme-dropdown"><ul>
     <li><button id="theme-native" title="Switch to native theme">Native</button></li>
@@ -61,12 +61,14 @@ Quick links:
 {% if mode != "offline" %}
 <div class="bar">
   <div class="ql">{{sitenavi}}</div>
-  <div class="srch" id="go-to-tag">
+  <div class="tag srch need-js">
     <select id="vh-select-tag"></select>
+    <div class="placeholder">Go to keyword<span class="not-mobile">&nbsp;(shortcut: <kbd>k</kbd>)</span></div>
   </div>
-  <form class="srch" action="https://duckduckgo.com" method="get" target="_blank" rel="noopener noreferrer">
+  <form class="site srch" action="https://duckduckgo.com" method="get" target="_blank" rel="noopener noreferrer">
     <input type="hidden" name="sites" value="{{project.vimdoc_site}}">
     <input type="search" name="q" id="vh-srch-input" placeholder="Site search">
+    <div class="placeholder need-js">Site search<span class="not-mobile">&nbsp;(shortcut: <kbd>s</kbd>)</span></div>
   </form>
   {% if filename != "help.txt" %}
   {{theme_switcher}}

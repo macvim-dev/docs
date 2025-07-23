@@ -15,6 +15,7 @@ class VimProject:
     url = "https://www.vim.org/"
     vimdoc_site = "vimhelp.org"
     doc_src_url = "https://github.com/vim/vim/tree/master/runtime/doc"
+    favicon = "favicon-vim.ico"
     favicon_notice = "favicon is based on http://amnoid.de/tmp/vim_solidbright_512.png and is used with permission by its author"
 
 
@@ -24,21 +25,30 @@ class NeovimProject:
     url = "https://neovim.io/"
     vimdoc_site = "neo.vimhelp.org"
     doc_src_url = "https://github.com/neovim/neovim/tree/master/runtime/doc"
+    favicon = "favicon-neovim.ico"
     favicon_notice = "favicon taken from https://neovim.io/favicon.ico, which is licensed under CC-BY-3.0: https://creativecommons.org/licenses/by/3.0/"
 
 
 VimProject.other = NeovimProject
 NeovimProject.other = VimProject
 
+NeovimProject.local_additions = """\
+<a href="matchit.txt.html#matchit.txt" class="l">matchit.txt</a>       Extended "%" matching
+"""
+
+# fmt: off
+VimProject.local_additions = NeovimProject.local_additions + """\
+<a href="editorconfig.txt.html#editorconfig.txt" class="l">editorconfig.txt</a>  EditorConfig plugin for vim.
+<a href="vim_faq.txt.html#vim_faq.txt" class="l">vim_faq.txt</a>       Frequently Asked Questions
+"""
+# fmt: on
+
 
 PROJECTS = {"vim": VimProject, "neovim": NeovimProject}
 
-FAQ_LINE = '<a href="vim_faq.txt.html#vim_faq.txt" class="l">vim_faq.txt</a>\tFrequently Asked Questions\n'
-MATCHIT_LINE = '<a href="matchit.txt.html#matchit.txt" class="l">matchit.txt</a>\tExtended "%" matching\n'
-
 RE_TAGLINE = re.compile(r"(\S+)\s+(\S+)")
 
-PAT_WORDCHAR = "[!#-)+-{}~\xC0-\xFF]"
+PAT_WORDCHAR = "[!#-)+-{}~\xc0-\xff]"
 
 PAT_HEADER = r"(^.*~$)"
 PAT_GRAPHIC = r"(^.* `$)"
@@ -46,11 +56,11 @@ PAT_PIPEWORD = r"(?<!\\)\|([#-)!+-{}~]+)\|"
 PAT_STARWORD = r"\*([#-)!+-~]+)\*(?:(?=\s)|$)"
 PAT_COMMAND = r"`([^` \t]+)`"
 PAT_OPTWORD = r"('(?:[a-z]{2,}|t_..)')"
-PAT_CTRL = r"((?:CTRL(?:-SHIFT)?|META|ALT)-(?:W_)?(?:\{char\}|<[A-Za-z]+?>|.)?)"
+PAT_CTRL = r"((?:CTRL(?:-SHIFT)?|META|ALT)-(?:W_)?(?:\{char\}|<[A-Za-z]+?>|Break|PageUp|PageDown|Insert|Del|.)?)"
 PAT_SPECIAL = (
     r"(<(?:[-a-zA-Z0-9_]+|[SCM]-.)>|\{.+?}|"
     r"\[(?:range|line|count|offset|\+?cmd|[-+]?num|\+\+opt|"
-    r"arg|arguments|ident|addr|group)]|"
+    r"arg|arguments|ident|addr|group)]|vim9\[cmd]|"
     r"(?<=\s)\[[-a-z^A-Z0-9_]{2,}])"
 )
 PAT_TITLE = r"(Vim version [0-9.a-z]+|N?VIM REFERENCE.*)"
@@ -90,11 +100,11 @@ RE_HEADING = re.compile(
 RE_EG_START = re.compile(r"(.* )?>(?:vim|lua)?$")
 RE_EG_END = re.compile(r"[^ \t]")
 RE_SECTION = re.compile(
-    r"(?!NOTE$|UTF-8.$|VALID.$|OLE.$|CTRL-|\.\.\.$)"
-    r"([A-Z.][-A-Z0-9 .,()_?]*?)\s*(?:\s\*|$)"
+    r"(?!NOTE$|UTF-8\.$|VALID\.$|OLE\.$|CTRL-|\.\.\.$)"
+    r"([A-Z.][-A-Z0-9 .,()_?']*?)\s*(?:\s\*|$)"
 )
 RE_STARTAG = re.compile(r'\*([^ \t"*]+)\*(?:\s|$)')
-RE_LOCAL_ADD = re.compile(r"LOCAL ADDITIONS:\s+\*local-additions\*$")
+RE_LOCAL_ADD = re.compile(r".*\s\*local-additions\*$")
 
 
 class Link:
@@ -105,7 +115,7 @@ class Link:
             self._tag_quoted = None
         else:
             self._tag_quoted = urllib.parse.quote_plus(tag)
-        self._tag_escaped = html_escape(tag)
+        self._tag_escaped = _html_escape(tag)
         self._cssclass = "d"
         if m := RE_LINKWORD.match(tag):
             opt, ctrl, special = m.groups()
@@ -162,7 +172,8 @@ class VimH2H:
                 if m := RE_TAGLINE.match(line):
                     tag, filename = m.group(1, 2)
                     self.do_add_tag(filename, tag)
-        self._urls["help-tags"] = Link("tags", "tags.html", "help-tags")
+        if self._project == VimProject:
+            self._urls["help-tags"] = Link("tags", "tags.html", "help-tags")
 
     def __del__(self):
         Link.href.cache_clear()
@@ -183,11 +194,7 @@ class VimH2H:
                 in_example = True
 
     def do_add_tag(self, filename, tag):
-        if self._mode == "online" and filename == "help.txt":
-            htmlfilename = "/"
-        else:
-            htmlfilename = filename + ".html"
-        self._urls[tag] = Link(filename, htmlfilename, tag)
+        self._urls[tag] = Link(filename, self.htmlfilename(filename), tag)
 
     def sorted_tag_href_pairs(self):
         result = [
@@ -203,9 +210,9 @@ class VimH2H:
             is_same_doc = links.filename == curr_filename
             return links.html(is_pipe, is_same_doc)
         elif css_class is not None:
-            return f'<span class="{css_class}">{html_escape(tag)}</span>'
+            return f'<span class="{css_class}">{_html_escape(tag)}</span>'
         else:
-            return html_escape(tag)
+            return _html_escape(tag)
 
     def synthesize_tag(self, curr_filename, text):
         def xform(c):
@@ -225,6 +232,12 @@ class VimH2H:
                 return tag
             tag = f"{base_tag}_{i}"
             i += 1
+
+    def htmlfilename(self, name):
+        if name == "help.txt" and self._mode == "online":
+            return "./"
+        else:
+            return name + ".html"
 
     @staticmethod
     def prelude(theme):
@@ -249,11 +262,11 @@ class VimH2H:
                     if line[0] == "<":
                         line = line[1:]
                 else:
-                    out.extend(('<span class="e">', html_escape(line), "</span>\n"))
+                    out.extend(('<span class="e">', _html_escape(line), "</span>\n"))
                     continue
 
             if RE_HRULE.match(line):
-                out.extend(('<span class="h">', html_escape(line), "</span>\n"))
+                out.extend(('<span class="h">', _html_escape(line), "</span>\n"))
                 continue
 
             if m := RE_EG_START.match(line):
@@ -285,7 +298,7 @@ class VimH2H:
                 tag_escaped = urllib.parse.quote_plus(tag)
                 sidebar_headings.append(
                     markupsafe.Markup(
-                        f'<a href="#{tag_escaped}">{html_escape(heading)}</a>'
+                        f'<a href="#{tag_escaped}">{_html_escape(heading)}</a>'
                     )
                 )
 
@@ -300,7 +313,7 @@ class VimH2H:
             for match in RE_TAGWORD.finditer(line):
                 pos = match.start()
                 if pos > lastpos:
-                    out.append(html_escape(tab_fixer.fix_tabs(line[lastpos:pos])))
+                    out.append(_html_escape(tab_fixer.fix_tabs(line[lastpos:pos])))
                 lastpos = match.end()
                 # fmt: off
                 (header, graphic, pipeword, starword, command, opt, ctrl, special,
@@ -315,13 +328,13 @@ class VimH2H:
                             '<span id="',
                             urllib.parse.quote_plus(starword),
                             '" class="t">',
-                            html_escape(starword),
+                            _html_escape(starword),
                             "</span>",
                         )
                     )
                     tab_fixer.incr_concealed_chars(2)
                 elif command is not None:
-                    out.extend(('<span class="e">', html_escape(command), "</span>"))
+                    out.extend(('<span class="e">', _html_escape(command), "</span>"))
                     tab_fixer.incr_concealed_chars(2)
                 elif opt is not None:
                     out.append(self.maplink(opt, filename, "o"))
@@ -330,33 +343,29 @@ class VimH2H:
                 elif special is not None:
                     out.append(self.maplink(special, filename, "s"))
                 elif title is not None:
-                    out.extend(('<span class="i">', html_escape(title), "</span>"))
+                    out.extend(('<span class="i">', _html_escape(title), "</span>"))
                 elif note is not None:
-                    out.extend(('<span class="n">', html_escape(note), "</span>"))
+                    out.extend(('<span class="n">', _html_escape(note), "</span>"))
                 elif header is not None:
                     out.extend(
-                        ('<span class="h">', html_escape(header[:-1]), "</span>")
+                        ('<span class="h">', _html_escape(header[:-1]), "</span>")
                     )
                 elif graphic is not None:
-                    out.append(html_escape(graphic[:-2]))
+                    out.append(_html_escape(graphic[:-2]))
                 elif url is not None:
                     out.extend(
-                        ('<a class="u" href="', url, '">', html_escape(url), "</a>")
+                        ('<a class="u" href="', url, '">', _html_escape(url), "</a>")
                     )
                 elif word is not None:
                     out.append(self.maplink(word, filename))
             if lastpos < len(line):
-                out.append(html_escape(tab_fixer.fix_tabs(line[lastpos:])))
+                out.append(_html_escape(tab_fixer.fix_tabs(line[lastpos:])))
             if span_opened:
                 out.append("</span>")
             out.append("\n")
 
-            if is_local_additions and self._project is VimProject:
-                out.append(MATCHIT_LINE)
-                out.append(FAQ_LINE)
-
-        static_dir = "/" if self._mode == "online" else ""
-        helptxt = "./" if self._mode == "online" else "help.txt.html"
+            if is_local_additions:
+                out.append(self._project.local_additions)
 
         return flask.render_template(
             "page.html",
@@ -364,13 +373,12 @@ class VimH2H:
             project=self._project,
             version=self._version,
             filename=filename,
-            static_dir=static_dir,
-            helptxt=helptxt,
+            helptxt=self.htmlfilename("help.txt"),
             content=markupsafe.Markup("".join(out)),
             sidebar_headings=sidebar_headings,
         )
 
 
 @functools.cache
-def html_escape(s):
+def _html_escape(s):
     return html.escape(s, quote=False)
