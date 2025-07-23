@@ -24,10 +24,8 @@ DEV_ENV = {
     "PYTHONWARNINGS": (
         "default,"
         "ignore:unclosed:ResourceWarning:sys,"
-        "ignore:pkg_resources is deprecated as an API:DeprecationWarning:google.cloud.ndb,"  # noqa: E501
-        "ignore:Deprecated call to `pkg_resources.:DeprecationWarning:pkg_resources,"
-        "ignore:Deprecated call to `pkg_resources.:DeprecationWarning:google.rpc,"
-        "ignore:ssl.match_hostname():DeprecationWarning:geventhttpclient.connectionpool"
+        "ignore:Type google._upb._message:DeprecationWarning:importlib._bootstrap,"
+        "ignore:This process (pid=:DeprecationWarning:gevent.os"
     ),
     "VIMHELP_ENV": "dev",
     "FLASK_DEBUG": "1",
@@ -57,9 +55,9 @@ venv_lazy = call(venv, lazy=True)
 
 @task
 def lint(c):
-    """Run linters (ruff, black)."""
+    """Run linter/formatter (ruff)."""
     c.run("ruff check .")
-    c.run("black --check .")
+    c.run("ruff format --check")
 
 
 @task(
@@ -93,13 +91,12 @@ def show_routes(c):
 @task(
     pre=[lint],
     help={
-        # fmt: off
         "target": "Target environment: 'staging' (default), 'prod', "
-                  "'all' (= staging + prod)"
-        # fmt: on
+                  "'all' (= staging + prod)",
+        "cron":   "Deploy cron.yaml instead of main app"
     },
-)
-def deploy(c, target="staging"):
+)  # fmt: skip
+def deploy(c, target="staging", cron=False):
     """Deploy app."""
     _ensure_private_mount(c)
     if target == "all":
@@ -113,6 +110,8 @@ def deploy(c, target="staging"):
             cmd = f"gcloud app deploy --project={PROJECT_PROD}"
         else:
             sys.exit(f"Invalid target name: '{t}'")
+        if cron:
+            cmd += " cron.yaml"
         c.run(cmd, pty=True)
 
 
@@ -122,6 +121,15 @@ def clean(c):
     for d in VENV_DIR, "__pycache__", "vimhelp/__pycache__", ".ruff_cache":
         if pathlib.Path(d).exists():
             c.run(f"rm -rf {d}")
+
+
+@task()
+def sh(c):
+    """Interactive shell with virtualenv and datastore available."""
+    _ensure_private_mount(c)
+    with c.prefix(f". {VENV_DIR}/bin/activate"):
+        c.run(os.getenv("SHELL", "bash"), env=DEV_ENV, pty=True)
+    print("Exited vimhelp shell")
 
 
 def _ensure_private_mount(c):
