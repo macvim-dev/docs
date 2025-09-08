@@ -62,7 +62,7 @@ jobs:
           path: ${{ github.workspace }}/macvim-built-commit.txt
           key: macvim-built-commit-${{ steps.setup-env-vars.outputs.docs_commit}}-${{ steps.setup-env-vars.outputs.macvim_commit }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
           cache: 'pip'
