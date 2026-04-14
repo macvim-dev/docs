@@ -26,14 +26,7 @@ To run the scripts locally, follow vimhelp's [README](vimhelp/README.md) to set 
 
 ```
 cd vimhelp
-python3 -m venv --upgrade-deps .venv
-.venv/bin/pip install -r requirements.txt
-```
-
-Source the venv:
-
-```
-. .venv/bin/activate
+uv sync
 ```
 
 Then run the script (make sure to substitute `$macvim_dir` with the directory that you have MacVim cloned to):
