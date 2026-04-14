@@ -1,8 +1,11 @@
+/.editorconfig
 /.git
 /.gitignore
 /.gcloudignore
 /.venv
 /.ruff_cache
+/pyproject.toml
+/uv.lock
 /scripts
 /README.md
 /LICENSE
@@ -10,4 +13,5 @@
 /tasks.py
 /gunicorn.conf.dev.py
 __pycache__/
+*.egg-info/
 html/
